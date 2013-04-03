@@ -8,11 +8,15 @@ module Rubyipmi::Freeipmi
 
     def initialize(opts)
       @config = Rubyipmi::Freeipmi::BmcConfig.new(opts)
-
       @info = {}
-      @channel = 2
+      if @options.has_key?("hostname")
+        @channel = 2
+      else
+        @channel = 1
+      end
     end
 
+    # get the entire lan settings
     def info
       if @info.length < 1
         parse(@config.section("Lan_Conf"))
@@ -21,6 +25,7 @@ module Rubyipmi::Freeipmi
       end
     end
 
+    # is the ip source dhcp?
     def dhcp?
       if @info.length < 1
         parse(@config.section("Lan_Conf"))
@@ -28,6 +33,7 @@ module Rubyipmi::Freeipmi
       @info["ip_address_source"].match(/dhcp/i) != nil
     end
 
+    # is the ip source static
     def static?
       if @info.length < 1
         parse(@config.section("Lan_Conf"))
@@ -35,6 +41,7 @@ module Rubyipmi::Freeipmi
       @info["ip_address_source"].match(/static/i) != nil
     end
 
+    # get the ip of the bmc device
     def ip
       if @info.length < 1
         parse(@config.section("Lan_Conf"))
@@ -42,6 +49,7 @@ module Rubyipmi::Freeipmi
       @info["ip_address"]
     end
 
+    # get the mac of the bmc device
     def mac
       if @info.length < 1
         parse(@config.section("Lan_Conf"))
@@ -49,6 +57,7 @@ module Rubyipmi::Freeipmi
       @info["mac_address"]
     end
 
+    # get the netmask of the bmc device
     def netmask
       if @info.length < 1
         parse(@config.section("Lan_Conf"))
@@ -56,11 +65,25 @@ module Rubyipmi::Freeipmi
       @info["subnet_mask"]
     end
 
+    # get the gateway of the bmc device
     def gateway
       if @info.length < 1
         parse(@config.section("Lan_Conf"))
       end
       @info["default_gateway_ip_address"]
+    end
+
+    # get the tcp settings info
+    def tcpinfo
+      {:ip => ip, :netmask =>netmask, :gateway => gateway}
+    end
+
+    # set the tcp settings
+    def tcpinfo=(args)
+      ip      = args[:ip]
+      netmask = args[:netmask]
+      gateway = args[:gateway]
+
     end
 
   #  def snmp
